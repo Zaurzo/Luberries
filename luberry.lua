@@ -30,6 +30,12 @@ function luberry:__index(k)
     end
 end
 
+function luberry:__newindex(k, v)
+    if self.__lib then
+        self.__lib[k] = v
+    end
+end
+
 ---@diagnostic disable-next-line
 local _, tbl_err_msg = pcall({})
 

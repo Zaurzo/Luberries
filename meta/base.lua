@@ -1,5 +1,10 @@
 ---@meta _
 
+---Returns true if `obj` can be called. (`obj()`)
+---@param obj any The object to check.
+---@return boolean callable
+function iscallable(obj) end
+
 ---Calls `require` in protected mode. 
 ---If the given module is not found, `nil` will be returned instead of an error being thrown.
 ---@param name string The module to load.

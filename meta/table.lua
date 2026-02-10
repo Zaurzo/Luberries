@@ -1,25 +1,21 @@
 ---@meta table
 
----Merges everything in table `from` to table `to`.
+---Puts everything in table `from` to table `to`.
+---Does not overwrite existing values.
 ---@param to table The table to merge to.
 ---@param from table The table to merge from.
 ---@return table to
-function table.merge(to, from) end
+function table.inherit(to, from) end
 
----Joins everything in table `from` to table `to`.
+---Merges everything in table `from` to table `to`. 
 ---@param to table The table to join to.
 ---@param from table The table to join from.
+---@param start_index number The index in `from` to start at.
+---@param end_index number The index in `from` to end at.
 ---@return table to
-function table.join(to, from) end
+function table.merge(to, from, start_index, end_index) end
 
----Joins everything from index 1 up to the first absent index in table `from` to table `to`.
----This is faster than `table.join`, so if both tables are sequential, `table.ijoin` should be used instead.
----@param to table The table to join to.
----@param from table The table to join from.
----@return table to
-function table.ijoin(to, from) end
-
----Joins everything in `...` to table `to`.
+---Assigns everything in `...` to table `to`.
 ---@param to table The table to join to.
 ---@param ... any The items to join into `to`.
-function table.jointuple(to, ...) end
+function table.assign(to, ...) end

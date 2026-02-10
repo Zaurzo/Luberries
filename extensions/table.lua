@@ -2,7 +2,7 @@
 local luberry = require('luberries.luberry')
 local table = luberry.create('table')
 
-function table.merge(to, from)
+function table.inherit(to, from)
     for k, v in pairs(from) do
         if to[k] == nil then
             to[k] = v
@@ -12,7 +12,7 @@ function table.merge(to, from)
     return to
 end
 
-function table.join(to, from, start_index, end_index)
+function table.merge(to, from, start_index, end_index)
     if start_index then
         end_index = end_index or #from
 
@@ -30,7 +30,7 @@ function table.join(to, from, start_index, end_index)
     return to
 end
 
-function table.jointuple(to, ...)
+function table.assign(to, ...)
     for i = 1, select('#', ...) do
         to[i] = select(i, ...)
     end
