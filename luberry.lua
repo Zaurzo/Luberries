@@ -25,8 +25,10 @@ function luberry.create(name)
 end
 
 function luberry:__index(k)
-    if self.__lib then
-        return self.__lib[k]
+    local lib = rawget(self, '__lib')
+
+    if lib then
+        return lib[k]
     end
 end
 
@@ -34,6 +36,8 @@ function luberry:__newindex(k, v)
     if self.__lib then
         self.__lib[k] = v
     end
+
+    rawset(self, k, v)
 end
 
 ---@diagnostic disable-next-line
