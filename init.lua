@@ -8,5 +8,6 @@ luberries.debug = require('luberries.extensions.debug')
 
 -- New libraries
 luberries.args = require('luberries.libs.args')
+luberries.metamethod = require('luberries.libs.metamethod')
 
 return luberries
