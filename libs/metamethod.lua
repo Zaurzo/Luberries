@@ -17,11 +17,18 @@ local metamethod do
     end
 end
 
-local getrawmetatable = require('debug').getmetatable
+local getmetafield do
+    local getrawmetatable = require('debug').getmetatable
+
+    function getmetafield(obj, field_name)
+        local mt = getrawmetatable(obj)
+        return mt and mt[field_name]
+    end
+end
 
 --#region __type metamethod
 
-local function mm_type()
+local function mm_type(use_name)
     local _type = type
     local select = select
 
@@ -31,17 +38,87 @@ local function mm_type()
         end
 
         local obj = ...
-        local mt = getrawmetatable(obj)
+        local type_name = getmetafield(obj, '__type') or (use_name and getmetafield(obj, '__name'))
 
-        if mt and mt.__type then
-            return mt.__type(obj)
-        end
-        
-        return _type(obj)
+        return type_name or _type(obj)
     end
 end
 
+--- A metamethod (`__type`) that changes the return result of `type()`
+---@type fun(use_name: boolean)
+---@diagnostic disable-next-line
 metamethods.type = metamethod(mm_type)
+
+--#endregion
+
+--#region __insert metamethod
+
+local function mm_insert()
+    local table_insert = table.insert
+    table.rawinsert = table_insert
+
+    function table.insert(tbl, value, ...)
+        local insert = getmetafield(tbl, '__insert')
+        if not insert then return table_insert(tbl, value, ...) end
+
+        local pos = value
+
+        if select('#', ...) > 0 then -- value is used as position
+            value = ...
+        else
+            pos = #tbl + 1
+        end
+
+        return insert(tbl, value, pos)
+    end
+end
+
+--- A metamethod (`__insert`) that overrides the behavior of `table.insert`
+---@type function
+---@diagnostic disable-next-line
+metamethods.insert = metamethod(mm_insert)
+
+--#endregion
+
+--#region __remove metamethod
+
+local function mm_remove()
+    local table_remove = table.remove
+    table.rawremove = table_remove
+
+    function table.remove(tbl, pos)
+        local remove = getmetafield(tbl, '__remove')
+        if not remove then return table_remove(tbl, pos) end
+
+        return remove(tbl, pos or #tbl)
+    end
+end
+
+--- A metamethod (`__remove`) that overrides the behavior of `table.remove`
+---@type function
+---@diagnostic disable-next-line
+metamethods.remove = metamethod(mm_remove)
+
+--#endregion
+
+--#region __move metamethod
+
+local function mm_move()
+    local table_move = table.move
+    table.rawmove = table_move
+
+    function table.move(tbl, from, to, dest, dest_tbl)
+        local move = getmetafield(tbl, '__move')
+        if not move then return table_move(tbl, from, to, dest, dest_tbl) end
+
+        return move(tbl, from, to, dest, dest_tbl)
+    end
+end
+
+--- A metamethod (`__move`) that overrides the behavior of `table.move`
+---@type function
+---@diagnostic disable-next-line
+metamethods.move = metamethod(mm_move)
 
 --#endregion
 
@@ -63,9 +140,8 @@ local function mm_format()
 
         for i = 1, n do
             local obj = select(i, ...)
-            local mt = getrawmetatable(obj)
 
-            if mt and mt.__format then
+            if getmetafield(obj, '__format') then
                 return true
             end
         end
@@ -103,10 +179,10 @@ local function mm_format()
                         pos = end_pos + 1
 
                         local obj = params[segment]
-                        local mt = getrawmetatable(obj)
+                        local format = getmetafield(obj, '__format')
 
-                        if mt and mt.__format then
-                            local res = mt.__format(obj, string_sub(spec, 2))
+                        if format then
+                            local res = format(obj, string_sub(spec, 2))
 
                             if res ~= nil then
                                 params[segment] = res
@@ -137,6 +213,9 @@ local function mm_format()
     end
 end
 
+--- A metamethod (`__format`) that determines the format result when used in `string.format`.
+---@type function
+---@diagnostic disable-next-line
 metamethods.format = metamethod(mm_format)
 
 --#endregion
