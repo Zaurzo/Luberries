@@ -44,3 +44,8 @@ function class(name, base) end
 ---@param base table The base to check for.
 ---@return boolean
 function instanceof(class, base) end
+
+---Creates a tuple from the passed arguments.
+---@param ... any The values to pass into the tuple.
+---@return tuple
+function tuple(...) end

@@ -109,4 +109,22 @@ function table.retain(tbl, start_pos, end_pos)
     return tbl
 end
 
+function table.reindex(tbl)
+    local sequence, n = {}, 0
+
+    for k, v in pairs(tbl) do
+        if type(k) == 'number' then
+            n = n + 1
+            sequence[n] = v
+            tbl[k] = nil
+        end
+    end
+
+    for i = 1, n do
+        tbl[i] = sequence[i]
+    end
+
+    return tbl
+end
+
 return table

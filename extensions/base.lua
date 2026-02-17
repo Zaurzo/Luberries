@@ -2,6 +2,8 @@
 local luberry = require('luberries.luberry')
 local base = luberry.create('_G')
 
+base.tuple = require('luberries.classes.tuple')
+
 function base.prequire(name)
     local ok, module = pcall(require, name)
     return ok and module or nil
@@ -24,22 +26,32 @@ function base.requirecopy(name)
 end
 
 do
-    local setmetatable = setmetatable
-    local getmetatable = getmetatable
+    local getinfo = require('debug').getinfo
+    local traceback = require('debug').traceback
 
-    function base.isprotected(tbl)
-        local mt = getmetatable(tbl)
-        if mt == nil then return false end
+    function errornohalt(msg, level)
+        level = (level or 1) + 1
 
-        if type(mt) ~= 'table' then
-            return true
+        local info = getinfo(level, 'S')
+
+        if info and info.source and info.what ~= 'C' then
+            msg = string.format('%s: %s', string.sub(info.source, 2), msg)
+        else
+            msg = tostring(msg)
         end
 
-        return not pcall(setmetatable, tbl, mt)
+        io.stderr:write(traceback(msg, level))
     end
+end
 
-    local getrawmetatable = require('debug').getmetatable
+do
     local type = type
+    local getrawmetatable = require('debug').getmetatable
+
+    function base.isprotected(tbl)
+        local mt = getrawmetatable(tbl)
+        return mt and mt.__metatable ~= nil
+    end
 
     function base.iscallable(t)
         if type(t) == 'function' then

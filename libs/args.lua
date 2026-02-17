@@ -75,7 +75,7 @@ end
 ---@return any ... The passed arguments combined with everything in `tbl`.
 function args.concat(tbl, ...)
     local combined = table.pack(...)
-    local tbl_n, args_n = (tbl.n or #tbl), combined.n
+    local tbl_n, args_n = #tbl, combined.n
 
     for i = 1, tbl_n do
         combined[i + args_n] = tbl[i]

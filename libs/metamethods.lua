@@ -1,21 +1,10 @@
 
 local luberry = require('luberries.luberry')
+local applier = require('luberries.internal.lazy_applier')
+
 local metamethods = luberry.create()
 
-local metamethod do
-    local applier_meta = {}
-
-    function applier_meta:__call()
-        if self.applied then return end
-
-        self.apply()
-        self.applied = true
-    end
-
-    function metamethod(apply)
-        return setmetatable({ apply = apply }, applier_meta)
-    end
-end
+--#region Internal Helpers
 
 local getmetafield do
     local getrawmetatable = require('debug').getmetatable
@@ -26,7 +15,21 @@ local getmetafield do
     end
 end
 
---#region __type metamethod
+local function methodexists(method_name, tester)
+    local tbl, exists
+    
+    tbl = setmetatable({}, {
+        [method_name] = function()
+            exists = true
+        end
+    })
+
+    pcall(tester, tbl)
+
+    return exists
+end
+
+--#endregion
 
 local function mm_type(use_name)
     local _type = type
@@ -47,11 +50,73 @@ end
 --- A metamethod (`__type`) that changes the return result of `type()`
 ---@type fun(use_name: boolean)
 ---@diagnostic disable-next-line
-metamethods.type = metamethod(mm_type)
+metamethods.type = applier(mm_type)
 
---#endregion
+local function mm_ipairs()
+    if methodexists('__ipairs', ipairs) then return false end
 
---#region __insert metamethod
+    local _ipairs = ipairs
+
+    function ipairs(t)
+        local iterator = getmetafield(t, '__ipairs') or _ipairs
+        return iterator(t)
+    end
+end
+
+--- Adds the `__ipairs` metamethod if it doesn't exist already
+---@type function
+---@diagnostic disable-next-line
+metamethods.ipairs = applier(mm_ipairs)
+
+local function mm_pairs()
+    if methodexists('__pairs', pairs) then return false end
+
+    local _pairs = pairs
+
+    function pairs(t)
+        local iterator = getmetafield(t, '__pairs') or _pairs
+        return iterator(t)
+    end
+end
+
+--- Adds the `__pairs` metamethod if it doesn't exist already
+---@type function
+---@diagnostic disable-next-line
+metamethods.pairs = applier(mm_pairs)
+
+local function mm_setmetatable()
+    local _setmetatable = setmetatable
+
+    function setmetatable(tbl, mt)
+        local set = getmetafield(tbl, '__setmetatable')
+
+        if set then
+            mt = set(tbl, mt) or mt
+        end
+
+        return _setmetatable(tbl, mt)
+    end
+end
+
+--- A metamethod (`__setmetatable`) that changes the metatable set by `setmetatable`.
+---@type function
+---@diagnostic disable-next-line
+metamethods.setmetatable = applier(mm_setmetatable)
+
+local function mm_getmetatable()
+    local _getmetatable = getmetatable
+
+    function getmetatable(tbl)
+        local get = getmetafield(tbl, '__getmetatable') or _getmetatable
+        return get(tbl)
+    end
+end
+
+--- A metamethod (`__getmetatable`) that changes what `getmetatable` returns.
+--- (Function version of `__metatable`)
+---@type function
+---@diagnostic disable-next-line
+metamethods.getmetatable = applier(mm_getmetatable)
 
 local function mm_insert()
     local table_insert = table.insert
@@ -76,11 +141,7 @@ end
 --- A metamethod (`__insert`) that overrides the behavior of `table.insert`
 ---@type function
 ---@diagnostic disable-next-line
-metamethods.insert = metamethod(mm_insert)
-
---#endregion
-
---#region __remove metamethod
+metamethods.insert = applier(mm_insert)
 
 local function mm_remove()
     local table_remove = table.remove
@@ -97,11 +158,7 @@ end
 --- A metamethod (`__remove`) that overrides the behavior of `table.remove`
 ---@type function
 ---@diagnostic disable-next-line
-metamethods.remove = metamethod(mm_remove)
-
---#endregion
-
---#region __move metamethod
+metamethods.remove = applier(mm_remove)
 
 local function mm_move()
     local table_move = table.move
@@ -118,11 +175,7 @@ end
 --- A metamethod (`__move`) that overrides the behavior of `table.move`
 ---@type function
 ---@diagnostic disable-next-line
-metamethods.move = metamethod(mm_move)
-
---#endregion
-
---#region __format metamethod
+metamethods.move = applier(mm_move)
 
 local function mm_format()
     local string_format = string.format
@@ -216,8 +269,6 @@ end
 --- A metamethod (`__format`) that determines the format result when used in `string.format`.
 ---@type function
 ---@diagnostic disable-next-line
-metamethods.format = metamethod(mm_format)
-
---#endregion
+metamethods.format = applier(mm_format)
 
 return metamethods
