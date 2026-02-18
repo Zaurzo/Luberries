@@ -3,6 +3,7 @@ local luberry = require('luberries.luberry')
 local base = luberry.create('_G')
 
 base.tuple = require('luberries.classes.tuple')
+base.enum = require('luberries.classes.enum')
 
 function base.prequire(name)
     local ok, module = pcall(require, name)
@@ -29,13 +30,18 @@ do
     local getinfo = require('debug').getinfo
     local traceback = require('debug').traceback
 
-    function errornohalt(msg, level)
+    function softerror(msg, level)
         level = (level or 1) + 1
 
-        local info = getinfo(level, 'S')
+        local info = getinfo(level, 'Sl')
 
         if info and info.source and info.what ~= 'C' then
-            msg = string.format('%s: %s', string.sub(info.source, 2), msg)
+            msg = string.format(
+                '%s:%d: %s',
+                string.sub(info.source, 2),
+                info.currentline,
+                msg
+            )
         else
             msg = tostring(msg)
         end

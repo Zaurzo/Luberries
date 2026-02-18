@@ -21,6 +21,11 @@ function requirecopy(name) end
 ---@return boolean protected
 function isprotected(tbl) end
 
+---Similiar to `error`, but does not halt execution.
+---@param msg string The error message to throw.
+---@param level? number The stack level to throw the error at.
+function softerror(msg, level) end
+
 ---Extended version of `pcall`.
 ---Calls `func` with the passed arguments (`...`) in protected mode.
 ---If an error happens in `func`, it won't be thrown, but instead its error message will be returned.
@@ -49,3 +54,8 @@ function instanceof(class, base) end
 ---@param ... any The values to pass into the tuple.
 ---@return tuple
 function tuple(...) end
+
+---Creates an enum from the passed table.
+---@param tbl table
+---@return enum
+function enum(tbl) end
