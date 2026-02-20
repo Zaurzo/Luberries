@@ -5,7 +5,7 @@ function luberry.create(name)
     local berry = {}
 
     if name then
-        local lib = _ENV[name]
+        local lib = _G[name]
 
         if not lib then
             local ok, loaded_lib = pcall(require, name)
