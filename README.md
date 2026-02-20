@@ -1,7 +1,10 @@
 # Luberries
-Luberries is a library for Lua that provides useful extensions to the default Lua libraries.
+Luberries is a library for Lua with the goal of providing useful or neat extensions/new libraries. Instead of modifying the original modules, each extension is a proxy wrapper to them.
 
 This library is a **work-in-progress**. I add things to this as I go.
+
+## Why The Name?
+The name "Luberries" is a mix of "Lua" and "Berries". Berries are small, juicy fruits, usually with multiple bundled together. I was thinking of grapes when I came up with this name. Imagine this module is the stem, and each extension or new library is a berry part of that stem that you can pick from.
 
 ## Example Usage
 This example isn't particularly useful, but it demonstrates how the library should be used.

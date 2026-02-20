@@ -4,17 +4,25 @@ local debug = luberry.create('debug')
 
 debug.upvalue = require('luberries.libs.upvalue')
 
----Returns true if `func` was defined in Lua.
----@param func function The function to check.
----@return boolean
+function debug.getmetafield(obj, field_name)
+    local mt = debug.getmetatable(obj)
+    return mt and rawget(mt, field_name)
+end
+
+function debug.tostring(obj)
+    local mt = debug.getmetatable(obj)
+    debug.setmetatable(obj, nil)
+
+    local str = tostring(obj)
+    debug.setmetatable(obj, mt)
+
+    return str
+end
+
 function debug.islua(func)
     return debug.getinfo(func, 'S').what == 'Lua'
 end
 
----Returns an array of all declared parameters in `func`.
----@param func function The function to get the parameters of.
----@return table params
----@return number count The amount of parameters. `...` is only counted as one.
 function debug.getparams(func)
     if not debug.islua(func) then
         error('cannot get parameters of a non-Lua function', 2)

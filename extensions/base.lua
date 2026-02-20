@@ -5,9 +5,16 @@ local base = luberry.create('_G')
 base.tuple = require('luberries.classes.tuple')
 base.enum = require('luberries.classes.enum')
 
+function base.getmetafield(obj, field_name)
+    local mt = getmetatable(obj)
+    return mt and rawget(mt, field_name)
+end
+
 function base.prequire(name)
     local ok, module = pcall(require, name)
-    return ok and module or nil
+    if not ok then return nil, module --[[ error msg ]] end
+
+    return module
 end
 
 function base.requirecopy(name)
@@ -27,10 +34,16 @@ function base.requirecopy(name)
 end
 
 do
-    local getinfo = require('debug').getinfo
-    local traceback = require('debug').traceback
+    local debug = require('luberries.debug')
+    local getinfo = debug.getinfo
+    local traceback = debug.traceback
 
     function softerror(msg, level)
+        if debug.no then
+            io.stderr:write(msg)
+            return
+        end
+
         level = (level or 1) + 1
 
         local info = getinfo(level, 'Sl')
@@ -52,7 +65,7 @@ end
 
 do
     local type = type
-    local getrawmetatable = require('debug').getmetatable
+    local getrawmetatable = require('luberries.debug').getmetatable
 
     function base.isprotected(tbl)
         local mt = getrawmetatable(tbl)
@@ -91,6 +104,40 @@ function base.pcallex(func, err_handler, on_success, ...)
     end
 
     return table.unpack(res, 1, res.n)
+end
+
+if not base.unpack then -- Lua 5.2+ compat
+    base.unpack = table.unpack
+end
+
+if not base.warn then -- Lua 5.3 and below compat
+    local warning_system_on = false
+
+    function base.warn(...)
+        local command = (...)
+
+        if command == '@on' or command == '@off' then
+            warning_system_on = command == '@on' and true or command == '@off' and false
+            return
+        end
+            
+        if not warning_system_on then return end
+
+        local warning = ''
+
+        for i = 1, select('#', ...) do
+            local segment = select(i, ...)
+            local t = type(segment)
+            
+            if t == 'string' or t == 'number' then
+                warning = warning .. segment
+            else
+                error(string.format('bad argument %d (string expected, got %s)', i, t), 2)
+            end
+        end
+
+        io.stderr:write('Lua warning: ' .. warning)
+    end
 end
 
 --#region Classes

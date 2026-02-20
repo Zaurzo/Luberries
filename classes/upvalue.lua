@@ -1,10 +1,12 @@
 
-local _ENV = require('luberries.extensions.base')
-local debug = require('debug')
+local debug = require('luberries.debug')
 
 ---A class representing an upvalue cell.
 ---@class upvalue
-local upvalue = class('upvalue')
+local upvalue = {}
+upvalue.__index = upvalue
+upvalue.__name = 'upvalue'
+upvalue.__type = 'upvalue'
 
 ---Assigns `value` to this upvalue.
 ---@param value any The value to assign.
@@ -50,11 +52,13 @@ function upvalue:__tostring()
     return string.format('upvalue: %p', self._id)
 end
 
-function upvalue:__ctor(func, uv_index)
+return function(func, uv_index, uv_id)
+    local self = {}
+
     self._is_lua = not uv_index or debug.getinfo(func, 'S').what == 'Lua'
 
     if self._is_lua then
-        local variable
+        local variable = func
 
         function self:_setupvalue(value)
             variable = value
@@ -64,10 +68,12 @@ function upvalue:__ctor(func, uv_index)
             return variable
         end
 
-        debug.upvaluejoin(self._setupvalue, 1, func, uv_index)
-        debug.upvaluejoin(self._getupvalue, 1, func, uv_index)
+        if uv_index then
+            debug.upvaluejoin(self._setupvalue, 1, func, uv_index)
+            debug.upvaluejoin(self._getupvalue, 1, func, uv_index)
+        end
 
-        self._id = debug.upvalueid(self._getupvalue, 1)
+        self._id = uv_id or debug.upvalueid(self._getupvalue, 1)
     else
         function self:_setupvalue(value)
             debug.setupvalue(func, uv_index, value)
@@ -78,8 +84,8 @@ function upvalue:__ctor(func, uv_index)
             return value
         end
 
-        self._id = debug.upvalueid(func, uv_index)
+        self._id = uv_id
     end
-end
 
-return upvalue
+    return setmetatable(self, upvalue)
+end

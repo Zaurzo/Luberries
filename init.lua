@@ -10,7 +10,12 @@ luberries.debug         = require('luberries.extensions.debug')
 luberries.args          = require('luberries.libs.args')
 
 -- Appliers
-luberries.compat        = require('luberries.libs.compat')
 luberries.metamethods   = require('luberries.libs.metamethods')
+
+local debug = require('luberries.debug')
+
+if debug.no then
+    luberries.base.warn('"debug" library is missing. Some features in Luberries may be limited, or even made no-ops.')
+end
 
 return luberries

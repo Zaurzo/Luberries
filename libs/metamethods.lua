@@ -1,13 +1,13 @@
 
 local luberry = require('luberries.luberry')
-local applier = require('luberries.internal.lazy_applier')
+local applier = require('luberries.lazyapplier')
 
 local metamethods = luberry.create()
 
 --#region Internal Helpers
 
 local getmetafield do
-    local getrawmetatable = require('debug').getmetatable
+    local getrawmetatable = require('luberries.debug').getmetatable
 
     function getmetafield(obj, field_name)
         local mt = getrawmetatable(obj)

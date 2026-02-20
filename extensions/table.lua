@@ -1,7 +1,6 @@
 
 local luberry = require('luberries.luberry')
 local table = luberry.create('table')
-local _table = {}
 
 local getmetafield do
     local getrawmetatable = require('debug').getmetatable
@@ -10,10 +9,6 @@ local getmetafield do
         local mt = getrawmetatable(obj)
         return mt and mt[field_name]
     end
-end
-
-for k, v in pairs(require('table')) do
-    _table[k] = v
 end
 
 function table.inherit(to, from)
@@ -72,6 +67,32 @@ function table.packrange(start_pos, end_pos, ...)
     return pack
 end
 
+function table.extract(tbl, mode)
+    if not (mode == 'k' or mode == 'v' or mode == 'kv') then
+        error("mode must be either 'k', 'v', or 'kv'", 2)
+    end
+
+    local seq, n = {}, 0
+
+    if mode == 'kv' then
+        for k, v in pairs(tbl) do
+            n = n + 1
+            seq[n] = k
+            n = n + 1
+            seq[n] = v
+        end
+    else
+        local keys = mode == 'k'
+
+        for k, v in pairs(tbl) do
+            n = n + 1
+            seq[n] = keys and k or v
+        end
+    end
+
+    return table.unpack(seq, 1, n)
+end
+
 function table.slice(tbl, start_pos, end_pos)
     if start_pos < 1 then error('start position lower than 1', 2) end
     
@@ -100,7 +121,7 @@ function table.retain(tbl, start_pos, end_pos)
     local mm_retain = getmetafield(tbl, '__retain')
     if mm_retain then mm_retain(tbl, start_pos, end_pos) return tbl end
 
-    _table.move(tbl, start_pos, end_pos, 1, tbl)
+    table.move(tbl, start_pos, end_pos, 1, tbl)
 
     for i = (end_pos - start_pos) + 2, #tbl do
         tbl[i] = nil
@@ -125,6 +146,18 @@ function table.reindex(tbl)
     end
 
     return tbl
+end
+
+if not table.unpack then -- Compat for 5.1
+    table.unpack = unpack
+end
+
+if not table.pack then -- Compat for 5.1
+    local select = select
+
+    function table.pack(...)
+        return { n = select('#', ...), ... }
+    end
 end
 
 return table
