@@ -48,8 +48,6 @@ local function mm_type(use_name)
 end
 
 --- A metamethod (`__type`) that changes the return result of `type()`
----@type fun(use_name: boolean)
----@diagnostic disable-next-line
 metamethods.type = applier(mm_type)
 
 local function mm_ipairs()
@@ -64,8 +62,6 @@ local function mm_ipairs()
 end
 
 --- Adds the `__ipairs` metamethod if it doesn't exist already
----@type function
----@diagnostic disable-next-line
 metamethods.ipairs = applier(mm_ipairs)
 
 local function mm_pairs()
@@ -80,8 +76,6 @@ local function mm_pairs()
 end
 
 --- Adds the `__pairs` metamethod if it doesn't exist already
----@type function
----@diagnostic disable-next-line
 metamethods.pairs = applier(mm_pairs)
 
 local function mm_setmetatable()
@@ -99,8 +93,6 @@ local function mm_setmetatable()
 end
 
 --- A metamethod (`__setmetatable`) that changes the metatable set by `setmetatable`.
----@type function
----@diagnostic disable-next-line
 metamethods.setmetatable = applier(mm_setmetatable)
 
 local function mm_getmetatable()
@@ -114,8 +106,6 @@ end
 
 --- A metamethod (`__getmetatable`) that changes what `getmetatable` returns.
 --- (Function version of `__metatable`)
----@type function
----@diagnostic disable-next-line
 metamethods.getmetatable = applier(mm_getmetatable)
 
 local function mm_insert()
@@ -139,8 +129,6 @@ local function mm_insert()
 end
 
 --- A metamethod (`__insert`) that overrides the behavior of `table.insert`
----@type function
----@diagnostic disable-next-line
 metamethods.insert = applier(mm_insert)
 
 local function mm_remove()
@@ -156,8 +144,6 @@ local function mm_remove()
 end
 
 --- A metamethod (`__remove`) that overrides the behavior of `table.remove`
----@type function
----@diagnostic disable-next-line
 metamethods.remove = applier(mm_remove)
 
 local function mm_move()
@@ -173,8 +159,6 @@ local function mm_move()
 end
 
 --- A metamethod (`__move`) that overrides the behavior of `table.move`
----@type function
----@diagnostic disable-next-line
 metamethods.move = applier(mm_move)
 
 local function mm_format()

@@ -1,23 +1,57 @@
 
 local luberry = {}
 
+local function patch(self, ...)
+    local lib = self.__lib
+    if not lib then return end
+
+    local count = select('#', ...)
+    local blacklist = {
+        __lib = true,
+        __call = true
+    }
+
+    if count > 0 then
+        local names = { ... }
+
+        for i = 1, count do
+            local name = names[i]
+            
+            if name ~= nil and not blacklist[name] then
+                local func = self[name]
+
+                if func then
+                    lib[name] = func
+                end
+            end
+        end
+    else
+        for name, func in pairs(self) do
+            if not blacklist[name] then
+                lib[name] = func
+            end
+        end
+    end
+end
+
 function luberry.create(name)
     local berry = {}
 
     if name then
-        local lib = _G[name]
+        local tbl = _G[name]
 
-        if not lib then
-            local ok, loaded_lib = pcall(require, name)
-            lib = ok and loaded_lib or nil
+        if not tbl then
+            local ok, lib = pcall(require, name)
+            tbl = ok and lib or nil
         end
 
-        if lib then
-            for k, v in pairs(lib) do
+        if tbl then
+            for k, v in pairs(tbl) do
                 berry[k] = v
             end
 
-            berry.__lib = lib
+            berry.__lib = tbl
+            berry.__call = patch
         end
     end
 
@@ -26,18 +60,12 @@ end
 
 function luberry:__index(k)
     local lib = rawget(self, '__lib')
+    if not lib then return end
 
-    if lib then
-        return lib[k]
-    end
-end
+    local v = lib[k]
+    self[k] = v
 
-function luberry:__newindex(k, v)
-    if self.__lib then
-        self.__lib[k] = v
-    end
-
-    rawset(self, k, v)
+    return v
 end
 
 ---@diagnostic disable-next-line

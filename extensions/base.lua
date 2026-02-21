@@ -12,7 +12,10 @@ end
 
 function base.prequire(name)
     local ok, module = pcall(require, name)
-    if not ok then return nil, module --[[ error msg ]] end
+
+    if not ok then
+        return nil, module -- error msg
+    end
 
     return module
 end
@@ -39,7 +42,7 @@ do
     local traceback = debug.traceback
 
     function softerror(msg, level)
-        if debug.no then
+        if debug.disabled then
             io.stderr:write(msg)
             return
         end
@@ -68,7 +71,10 @@ do
     local debug = require('luberries.debug')
 
     function base.isprotected(tbl)
-        if debug.no then -- Use a less efficient method if we don't have the real debug.getmetatable
+        if debug.disabled then
+            -- Use a less efficient (but reliable) method 
+            -- if we don't have the real debug.getmetatable
+
             local mt = getmetatable(tbl)
 
             if mt == nil then
@@ -113,7 +119,8 @@ function base.ripairs(tbl, start)
     return ripairs_iterator, tbl, start + 1
 end
 
--- Returns all of `...` if there are any items - otherwise unpacks and returns all of `tbl`
+local table = require('luberries.extensions.table')
+
 local function resolve_success(tbl, ok, ...)
     if not ok or select('#', ...) < 1 then
         return table.unpack(tbl, 1, tbl.n)
@@ -123,15 +130,22 @@ local function resolve_success(tbl, ok, ...)
 end
 
 function base.pcallex(func, err_handler, on_success, ...)
-    local res = table.pack(pcall(func, ...))
+    local res = table.pack( xpcall(func, err_handler, ...) )
 
-    if not res[1] then -- `func` had an error
-        local err = err_handler and err_handler(res[2])
-        return false, err or res[2]
-    end
+    if res[1] and on_success then
+        --[[
+            Calls on_success if func executed successfully. The success callback is 
+            passed the return values of func; If the callback returns anything, 
+            pcallex will return those instead of func's actual returns.
+        --]]
 
-    if on_success then -- callback if `func` executed successfully
-        return resolve_success(res, pcall(on_success, table.unpack(res, 2, res.n)))
+        return resolve_success(
+            res,
+            pcall(
+                on_success,
+                table.unpack(res, 2, res.n)
+            )
+        )
     end
 
     return table.unpack(res, 1, res.n)
@@ -184,24 +198,24 @@ do
 
     if not forwards_args then
         local xpcall, select = xpcall, select
-        local unpack = table.unpack or unpack
+        local unpack = table.unpack
 
         function base.xpcall(func, err_handler, ...)
             local f, n = func, select('#', ...)
 
-            -- If multiple arguments were passed, pack them into a table
-            -- Otherwise, if only one argument was passed, just use that
-            local args = n == 1 and (...) or n > 1 and { ... }
+            -- Micro-optimization:
+            -- Only pack the arguments into a table if more than one were passed
+            if n == 1 then
+                local arg = (...)
 
-            if args then
-                if n > 1 then
-                    function f()
-                        return func(unpack(args, 1, n))
-                    end
-                else
-                    function f()
-                        return func(args)
-                    end
+                function f()
+                    return func(arg)
+                end
+            elseif n > 1 then
+                local args = { ... }
+
+                function f()
+                    return func(unpack(args, 1, n))
                 end
             end
             
@@ -227,10 +241,7 @@ function class_meta:new(...)
 end
 
 function class_meta:__index(k)
-    local v = rawget(self.class, k)
-    if v ~= nil then return end
-
-    return k == 'new' and class_meta.new or nil
+    return rawget(self.class, k)
 end
 
 function class_meta:__newindex(k, v)

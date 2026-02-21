@@ -16,4 +16,14 @@ if require('luberries.debug').no then
     luberries.base.warn('"debug" library is missing. Some features in Luberries may be limited, or even made no-ops.')
 end
 
+function luberries.environment()
+    local env = luberries.base
+
+    if env.setfenv then
+        env.setfenv(2, env)
+    end
+
+    return env
+end
+
 return luberries
