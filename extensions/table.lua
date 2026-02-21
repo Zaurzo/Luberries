@@ -116,7 +116,7 @@ end
 
 function table.slice(tbl, start_pos, end_pos)
     if start_pos < 1 then error('start position lower than 1', 2) end
-    
+
     if start_pos > end_pos then
         error('start position greater than end position', 2)
     end
@@ -134,7 +134,7 @@ end
 
 function table.retain(tbl, start_pos, end_pos)
     if start_pos < 1 then error('start position lower than 1', 2) end
-    
+
     if start_pos > end_pos then
         error('start position greater than end position', 2)
     end
@@ -174,10 +174,33 @@ if not table.unpack then -- Compat for 5.1
 end
 
 if not table.pack then -- Compat for 5.1
-    local select = select
-
     function table.pack(...)
         return { n = select('#', ...), ... }
+    end
+end
+
+if not table.move then -- Compat for 5.3<
+    -- from https://github.com/LuaJIT/LuaJIT/blob/v2.1/src/lib_table.c#L132
+    function table.move(tbl, start, stop, target, dest)
+        if dest == nil then
+            dest = tbl
+        end
+
+        if e >= start then
+            local d = target - start
+
+            if t > stop or t <= start or dest ~= tbl then
+                for i = start, stop do
+                    dest[i + d] = tbl[i]
+                end
+            else
+                for i = stop, start, -1 do
+                    dest[i + d] = tbl[i]
+                end
+            end
+        end
+
+        return dest
     end
 end
 
