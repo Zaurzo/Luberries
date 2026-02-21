@@ -1,16 +1,20 @@
 
 local luberry = require('luberries.luberry')
-local base = luberry.create('_G')
+local _ENV = luberry.create('_G')
 
-base.tuple = require('luberries.classes.tuple')
-base.enum = require('luberries.classes.enum')
+if setfenv then -- Lua 5.1 compat
+    setfenv(1, _ENV)
+end
 
-function base.getmetafield(obj, field_name)
+tuple = require('luberries.classes.tuple')
+enum = require('luberries.classes.enum')
+
+function getmetafield(obj, field_name)
     local mt = getmetatable(obj)
     return mt and rawget(mt, field_name)
 end
 
-function base.prequire(name)
+function prequire(name)
     local ok, module = pcall(require, name)
 
     if not ok then
@@ -20,7 +24,7 @@ function base.prequire(name)
     return module
 end
 
-function base.requirecopy(name)
+function requirecopy(name)
     local module = require(name)
 
     if type(module) ~= 'table' then
@@ -70,7 +74,7 @@ do
     local type = type
     local debug = require('luberries.debug')
 
-    function base.isprotected(tbl)
+    function isprotected(tbl)
         if debug.disabled then
             -- Use a less efficient (but reliable) method 
             -- if we don't have the real debug.getmetatable
@@ -88,7 +92,7 @@ do
         return mt and rawget(mt, '__metatable') ~= nil
     end
 
-    function base.iscallable(t)
+    function iscallable(t)
         if type(t) == 'function' then
             return true
         end
@@ -114,7 +118,7 @@ local function ripairs_iterator(tbl, i)
     return i, tbl[i]
 end
 
-function base.ripairs(tbl, start)
+function ripairs(tbl, start)
     start = start or #tbl
     return ripairs_iterator, tbl, start + 1
 end
@@ -129,7 +133,7 @@ local function resolve_success(tbl, ok, ...)
     end
 end
 
-function base.pcallex(func, err_handler, on_success, ...)
+function pcallex(func, err_handler, on_success, ...)
     local res = table.pack( xpcall(func, err_handler, ...) )
 
     if res[1] and on_success then
@@ -151,14 +155,17 @@ function base.pcallex(func, err_handler, on_success, ...)
     return table.unpack(res, 1, res.n)
 end
 
-if not base.unpack then -- Lua 5.2+ compat
-    base.unpack = table.unpack
+if not unpack then -- Lua 5.2+ compat
+    unpack = table.unpack
 end
 
-if not base.warn then -- Lua 5.3 and below compat
+if not warn then -- Lua 5.3 and below compat
     local warning_system_on = false
+    local select = select
+    local type = type
+    local error = error
 
-    function base.warn(...)
+    function warn(...)
         local command = (...)
 
         if command == '@on' or command == '@off' then
@@ -197,10 +204,10 @@ do
     end
 
     if not forwards_args then
-        local xpcall, select = xpcall, select
+        local _xpcall, select = xpcall, select
         local unpack = table.unpack
 
-        function base.xpcall(func, err_handler, ...)
+        function xpcall(func, err_handler, ...)
             local f, n = func, select('#', ...)
 
             -- Micro-optimization:
@@ -219,7 +226,7 @@ do
                 end
             end
             
-            return xpcall(f, err_handler)
+            return _xpcall(f, err_handler)
         end
     end
 end
@@ -258,7 +265,7 @@ end
 
 class_meta.__call = class_meta.new
 
-function base.class(name, base)
+function class(name, base)
     local class = {}
     class.__name = name
 
@@ -269,7 +276,7 @@ function base.class(name, base)
     return setmetatable({ class = class }, class_meta)
 end
 
-function base.instanceof(class, base)
+function instanceof(class, base)
     local mt = getmetatable(class)
 
     while mt ~= base do
@@ -285,4 +292,4 @@ end
 
 --#endregion
 
-return base
+return _ENV
