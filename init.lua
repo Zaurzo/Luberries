@@ -13,14 +13,14 @@ luberries.args          = require('luberries.libs.args')
 luberries.metamethods   = require('luberries.libs.metamethods')
 
 if require('luberries.debug').disabled then
-    luberries.base.warn('"debug" library is missing. Some features in Luberries may be limited, or even made no-ops.')
+    print('[Luberries] "debug" library is missing. Some features may be limited, or even made no-ops.')
 end
 
 function luberries.environment()
     local env = luberries.base
 
-    if env.setfenv then
-        env.setfenv(2, env)
+    if setfenv then
+        setfenv(2, env)
     end
 
     return env
