@@ -108,6 +108,12 @@ do
     end
 end
 
+local inext = ipairs({})
+
+function ipairs(tbl, start)
+    return inext, tbl, (start or 1) - 1
+end
+
 local function ripairs_iterator(tbl, i)
     i = i - 1
 
