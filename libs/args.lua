@@ -44,7 +44,17 @@ end
 ---@param ... any The arguments starting from `start_pos` to `end_pos`.
 function args.slice(start_pos, end_pos, ...)
     local pack = table.pack(...)
-    end_pos = math.min(end_pos, pack.n)
+    local n = pack.n
+
+    if start_pos < 0 then
+        start_pos = n + start_pos + 1
+    end
+
+    if end_pos < 0 then
+        end_pos = n + end_pos + 1
+    end
+
+    end_pos = math.min(end_pos, n)
 
     if start_pos > end_pos then
         error('start index cannot be greater than end index', 2)
