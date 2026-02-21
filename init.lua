@@ -12,7 +12,7 @@ luberries.args          = require('luberries.libs.args')
 -- Appliers
 luberries.metamethods   = require('luberries.libs.metamethods')
 
-if require('luberries.debug').no then
+if require('luberries.debug').disabled then
     luberries.base.warn('"debug" library is missing. Some features in Luberries may be limited, or even made no-ops.')
 end
 
