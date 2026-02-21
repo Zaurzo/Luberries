@@ -42,6 +42,8 @@ function table.merge(to, from, start_index, end_index)
     return to
 end
 
+local select = select
+
 function table.assign(to, ...)
     local mm_assign = getmetafield(to, '__assign')
     if mm_assign then mm_assign(to, ...) return to end
@@ -63,6 +65,25 @@ function table.packrange(start_pos, end_pos, ...)
     end
 
     pack.n = n
+
+    return pack
+end
+
+-- [0] is faster than .n - avoids hash lookup
+function table.packi(...)
+    return { [0] = select('#', ...), ... }
+end
+
+function table.packirange(start_pos, end_pos, ...)
+    local pack = {}
+    local n = 0
+
+    for i = start_pos, end_pos do
+        n = n + 1
+        pack[n] = select(i, ...)
+    end
+
+    pack[0] = n
 
     return pack
 end

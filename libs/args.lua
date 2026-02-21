@@ -23,6 +23,8 @@ function args.contains(item, ...)
     return false
 end
 
+local table = require('luberries.extensions.table')
+
 ---Returns the type of every argument passed.
 ---@param ... any The arguments to pass.
 ---@return string ... The types of the arguments passed.
@@ -43,8 +45,8 @@ end
 ---@param end_pos number End range.
 ---@param ... any The arguments starting from `start_pos` to `end_pos`.
 function args.slice(start_pos, end_pos, ...)
-    local pack = table.pack(...)
-    local n = pack.n
+    local pack = table.packi(...)
+    local n = pack[0]
 
     if start_pos < 0 then
         start_pos = n + start_pos + 1
@@ -84,8 +86,8 @@ end
 ---@param ... any The arguments to combine with `tbl`.
 ---@return any ... The passed arguments combined with everything in `tbl`.
 function args.concat(tbl, ...)
-    local combined = table.pack(...)
-    local tbl_n, args_n = #tbl, combined.n
+    local combined = table.packi(...)
+    local tbl_n, args_n = #tbl, combined[0]
 
     for i = 1, tbl_n do
         combined[i + args_n] = tbl[i]
