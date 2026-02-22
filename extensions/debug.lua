@@ -46,4 +46,9 @@ function debug.getparams(func)
     return params, count
 end
 
+function debug.currentf()
+    local info = debug.getinfo(2, 'f')
+    return info and info.func or nil
+end
+
 return debug

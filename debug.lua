@@ -4,7 +4,8 @@
 local ok, debug = pcall(require, 'debug')
 
 if not ok then -- Respect debug library stripping
-    debug = { disabled = true }
+    debug = {}
+    debug.disabled = true
 else
     local shallow_copy = {} -- Do not use the global debug table
 
@@ -13,6 +14,17 @@ else
     end
 
     debug = shallow_copy
+    debug.disabled = false
+end
+
+function debug.infostripped(f)
+    if debug.disabled then
+        return true
+    end
+
+    local info = debug.getinfo(f, 'S')
+
+    return not info.source or info.source == '=?'
 end
 
 -- Use the most powerful getmetatable that is available 

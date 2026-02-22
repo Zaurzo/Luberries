@@ -67,6 +67,15 @@ function upvalue.find(func, name)
     end
 end
 
+function upvalue.replace(func, index, value)
+    local uv = upvalue.get(func, index)
+    if not uv then return end
+
+    debug.upvaluejoin(func, index, function() return value end, 1)
+
+    return uv
+end
+
 function upvalue.swap(func1, uv_index1, func2, uv_index2)
     local uv1 = upvalue.get(func1, uv_index1)
     if not uv1 then return end
