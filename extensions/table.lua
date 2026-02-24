@@ -1,15 +1,21 @@
 
-local luberry = require('luberries.luberry')
-local table = luberry.create('table')
+local table = setmetatable({}, { __index = table })
+
+--#region Internal Helpers
 
 local getmetafield do
-    local getrawmetatable = require('debug').getmetatable
+    local ok, debug = pcall(require, 'luberries.debug')
+    if not ok then ok, debug = pcall(require, 'debug') end
+
+    local getmetatable = ok and debug.getmetatable or getmetatable
 
     function getmetafield(obj, field_name)
-        local mt = getrawmetatable(obj)
+        local mt = getmetatable(obj)
         return mt and mt[field_name]
     end
 end
+
+--#endregion
 
 function table.inherit(to, from)
     for k, v in pairs(from) do

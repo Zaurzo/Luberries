@@ -1,6 +1,5 @@
 
-local luberry = require('luberries.luberry')
-local debug = luberry.create('debug')
+local debug = setmetatable({}, { __index = debug })
 
 debug.upvalue = require('luberries.libs.upvalue')
 

@@ -1,16 +1,21 @@
 
+--[[---------------------------------
+    Luberries (Stem)
+-----------------------------------]]
+
 local luberries = {}
+local open = require('luberries.open')
 
 -- Extensions
-luberries.base          = require('luberries.extensions.base')
-luberries.table         = require('luberries.extensions.table')
-luberries.debug         = require('luberries.extensions.debug')
+luberries.base          = open('luberries.extensions.base', '_G')
+luberries.table         = open('luberries.extensions.table', 'table')
+luberries.debug         = open('luberries.extensions.debug', 'debug')
 
 -- New libraries
-luberries.args          = require('luberries.libs.args')
+luberries.args          = open('luberries.libs.args')
 
 -- Appliers
-luberries.metamethods   = require('luberries.libs.metamethods')
+luberries.metamethods   = open('luberries.libs.metamethods')
 
 if require('luberries.debug').disabled then
     print('[Luberries] "debug" library is missing. Some features may be limited, or even made no-ops.')

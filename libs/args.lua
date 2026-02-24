@@ -1,6 +1,5 @@
 
-local luberry = require('luberries.luberry')
-local args = luberry.create()
+local args = {}
 
 ---Returns the amount of arguments passed.
 ---@param ... any The arguments to pass.

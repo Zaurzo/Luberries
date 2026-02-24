@@ -1,9 +1,8 @@
 
-local luberry = require('luberries.luberry')
-local _ENV = luberry.create('_G')
+local _ENV = setmetatable({}, { __index = _G })
 
-if setfenv then -- Lua 5.1 compat
-    setfenv(1, _ENV)
+if _G.setfenv then -- Lua 5.1 compat
+    _G.setfenv(1, _ENV)
 end
 
 tuple = require('luberries.classes.tuple')
@@ -128,36 +127,39 @@ function ripairs(tbl, start)
     return ripairs_iterator, tbl, (start or #tbl) + 1
 end
 
-local table = require('luberries.extensions.table')
-
-local function resolve_success(tbl, ok, ...)
-    if not ok or select('#', ...) < 1 then
+local function resolve_success(tbl, ...)
+    if select('#', ...) < 1 then
         return table.unpack(tbl, 1, tbl.n)
     else
         return true, ...
     end
 end
 
-function pcallex(func, err_handler, on_success, ...)
-    local res = table.pack( xpcall(func, err_handler, ...) )
+do
+    local table_unpack = table.unpack or unpack
 
-    if res[1] and on_success then
-        --[[
-            Calls on_success if func executed successfully. The success callback is 
-            passed the return values of func; If the callback returns anything, 
-            pcallex will return those instead of func's actual returns.
-        --]]
-
-        return resolve_success(
-            res,
-            pcall(
-                on_success,
-                table.unpack(res, 2, res.n)
-            )
-        )
+    local function table_pack(...)
+        return { [0] = select('#', ...), ... }
     end
 
-    return table.unpack(res, 1, res.n)
+    function pcallex(func, err_handler, on_success, ...)
+        local res = table_pack( xpcall(func, err_handler, ...) )
+
+        if res[1] and on_success then
+            --[[
+                Calls on_success if func executed successfully. The success callback is 
+                passed the return values of func; If the callback returns anything, 
+                pcallex will return those instead of func's actual returns.
+            --]]
+
+            return resolve_success(
+                res,
+                on_success(table_unpack(res, 2, res[0]))
+            )
+        end
+
+        return table_unpack(res, 1, res[0])
+    end
 end
 
 if not unpack then -- Lua 5.2+ compat
@@ -295,8 +297,6 @@ if not setfenv then -- Lua 5.2+ compat
     end
 end
 
--- xpcall compatibility shim
--- Some versions of Lua have a version of xpcall that doesn't forward arguments
 do
     local forwards_args do
         local function verify(ok)
@@ -307,30 +307,7 @@ do
     end
 
     if not forwards_args then
-        local _xpcall, select = xpcall, select
-        local unpack = table.unpack
-
-        function xpcall(func, err_handler, ...)
-            local f, n = func, select('#', ...)
-
-            -- Micro-optimization:
-            -- Only pack the arguments into a table if more than one were passed
-            if n == 1 then
-                local arg = (...)
-
-                function f()
-                    return func(arg)
-                end
-            elseif n > 1 then
-                local args = { ... }
-
-                function f()
-                    return func(unpack(args, 1, n))
-                end
-            end
-            
-            return _xpcall(f, err_handler)
-        end
+        xpcall = require('luberries.extensions.base.xpcall')
     end
 end
 

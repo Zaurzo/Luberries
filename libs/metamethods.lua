@@ -1,21 +1,21 @@
 
-local luberry = require('luberries.luberry')
-local applier = require('luberries.lazyapplier')
-
-local metamethods = luberry.create()
+local metamethods = {}
 
 --#region Internal Helpers
 
 local getmetafield do
-    local getrawmetatable = require('luberries.debug').getmetatable
+    local ok, debug = pcall(require, 'luberries.debug')
+    if not ok then ok, debug = pcall(require, 'debug') end
+
+    local getmetatable = ok and debug.getmetatable or getmetatable
 
     function getmetafield(obj, field_name)
-        local mt = getrawmetatable(obj)
+        local mt = getmetatable(obj)
         return mt and mt[field_name]
     end
 end
 
-local function methodexists(method_name, tester)
+local function method_exists(method_name, tester)
     local tbl, exists
     
     tbl = setmetatable({}, {
@@ -27,6 +27,18 @@ local function methodexists(method_name, tester)
     pcall(tester, tbl)
 
     return exists
+end
+
+local function applier(apply)
+    local applied
+
+    return function(...)
+        if applied then return end
+
+        if apply(...) ~= false then
+            applied = true
+        end
+    end
 end
 
 --#endregion
@@ -51,7 +63,7 @@ end
 metamethods.type = applier(mm_type)
 
 local function mm_ipairs()
-    if methodexists('__ipairs', ipairs) then return false end
+    if method_exists('__ipairs', ipairs) then return false end
 
     local _ipairs = ipairs
 
@@ -65,7 +77,7 @@ end
 metamethods.ipairs = applier(mm_ipairs)
 
 local function mm_pairs()
-    if methodexists('__pairs', pairs) then return false end
+    if method_exists('__pairs', pairs) then return false end
 
     local _pairs = pairs
 
