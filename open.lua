@@ -79,7 +79,7 @@ local patch do
 end
 
 local function open(name, inherit)
-    local ok, berry = pcall(require, name)
+    local ok, berry = pcall(require, 'luberries.' .. name)
     if not ok then error('attempt to open a non-existent berry', 2) end
 
     local mt = getmetatable(berry) or {}
@@ -130,6 +130,8 @@ local function open(name, inherit)
 
             return call(self, ...)
         end
+
+        berry.__call = nil
     end
 
     return setmetatable(berry, mt)
