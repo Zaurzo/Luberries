@@ -80,9 +80,12 @@ end
 
 local function open(name, inherit)
     local ok, berry = pcall(require, 'luberries.' .. name)
-    if not ok then error('attempt to open a non-existent berry', 2) end
 
-    local mt = getmetatable(berry) or {}
+    if not ok then
+        error('attempt to open a non-existent berry (' .. name .. ')', 2)
+    end
+
+    local mt = getmetatable(berry)
 
     if inherit then
         local tab = _G[inherit]
@@ -106,6 +109,8 @@ local function open(name, inherit)
             additions[k] = v
         end
 
+        mt = mt or {}
+
         mt.__index = tab
         mt.__additions = additions
         mt.__call = patch
@@ -116,25 +121,11 @@ local function open(name, inherit)
                 berry[k] = v
             end
         end
+
+        return setmetatable(berry, mt)
     end
 
-    local call = berry.__call --[[@as function]]
-
-    if call then
-        local old_call = mt.__call
-
-        function mt:__call(...)
-            if old_call then
-                old_call(self, ...)
-            end
-
-            return call(self, ...)
-        end
-
-        berry.__call = nil
-    end
-
-    return setmetatable(berry, mt)
+    return berry
 end
 
 return open

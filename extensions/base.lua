@@ -1,9 +1,20 @@
 
-local _ENV = setmetatable({}, { __index = _G })
+--#region Setup Extension Base
 
-if _G.setfenv then -- Lua 5.1 compat
-    _G.setfenv(1, _ENV)
+local setmetatable = setmetatable
+local _ENV, _G = {}, _G
+
+if setfenv then
+    setfenv(1, _ENV)
 end
+
+setmetatable(_ENV, { __index = _G })
+
+for k, v in pairs(_G) do
+    _ENV[k] = v
+end
+
+--#endregion
 
 tuple = require('luberries.classes.tuple')
 enum = require('luberries.classes.enum')
@@ -297,19 +308,8 @@ if not setfenv then -- Lua 5.2+ compat
     end
 end
 
-do
-    local forwards_args do
-        local function verify(ok)
-            forwards_args = ok
-        end
-
-        xpcall(verify, print, true)
-    end
-
-    if not forwards_args then
-        xpcall = require('luberries.extensions.base.xpcall')
-    end
-end
+local ok, _xpcall = pcall(require, 'luberries.extensions.base.xpcall')
+xpcall = ok and _xpcall or xpcall
 
 --#region Classes
 

@@ -1,5 +1,13 @@
 
-local table = setmetatable({}, { __index = table })
+--#region Setup Extension Base
+
+local table = {}
+
+for k, v in pairs(require('table')) do
+    table[k] = v
+end
+
+--#endregion
 
 --#region Internal Helpers
 

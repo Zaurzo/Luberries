@@ -5,6 +5,20 @@
 -- Based off of https://github.com/BlackMATov/xpcall.lua/tree/main
 -- This implementation is a little bit slower, but it's negligible. I like readability
 
+-- Check if we already forward arguments
+do
+    local forwards_args
+    local function verify(ok)
+        forwards_args = ok
+    end
+
+    xpcall(verify, print, true)
+
+    if forwards_args then
+        return xpcall
+    end
+end
+
 local a1, a2, a3, a4, a5, a6, a7, a8, a9, a10
 local _args, _n
 local _func_to_call
@@ -52,7 +66,7 @@ local _xpcall = xpcall
 local function xpcall(func, err_handler, ...)
     _n = select('#', ...)
 
-    if _n < 1 then
+    if _n == 0 then
         return _xpcall(func, err_handler)
     end
 

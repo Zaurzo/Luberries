@@ -1,7 +1,23 @@
 
-local debug = setmetatable({}, { __index = debug })
+--#region Setup Extension Base
 
-debug.upvalue = require('luberries.libs.upvalue')
+local debug = {} do
+    local ok, tab = pcall(require, 'debug')
+
+    if ok then
+        for k, v in pairs(tab) do
+            debug[k] = v
+        end
+    end
+
+    ok, tab = pcall(require, 'luberries.libs.upvalue')
+
+    if ok then
+        debug.upvalue = tab
+    end
+end
+
+--#endregion
 
 function debug.getmetafield(obj, field_name)
     local mt = debug.getmetatable(obj)
