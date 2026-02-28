@@ -9,6 +9,8 @@ end
 
 --#endregion
 
+math.tau = math.pi * 2
+
 function math.isdecimal(num)
     return math.floor(num) ~= num
 end

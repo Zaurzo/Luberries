@@ -77,14 +77,17 @@ end
 ---@param ... any The arguments to reverse.
 ---@return any ... The reversed arguments.
 function args.reverse(...)
-    local reversed = {}
-    local n = select('#', ...)
+    local pack = table_pack(...)
+    local i, j = 1, pack[0]
 
-    for i = 1, n do
-        reversed[i] = select(n - (i - 1), ...)
+    while i < j do
+        pack[i], pack[j] = pack[j], pack[i]
+
+        i = i + 1
+        j = j - 1
     end
 
-    return table_unpack(reversed, 1, n)
+    return table_unpack(pack, 1, pack[0])
 end
 
 ---Combines everything in `tbl` to the passed arguments.

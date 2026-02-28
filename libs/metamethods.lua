@@ -120,59 +120,6 @@ end
 --- (Function version of `__metatable`)
 metamethods.getmetatable = applier(mm_getmetatable)
 
-local function mm_insert()
-    local table_insert = table.insert
-    table.rawinsert = table_insert
-
-    function table.insert(tbl, value, ...)
-        local insert = getmetafield(tbl, '__insert')
-        if not insert then return table_insert(tbl, value, ...) end
-
-        local pos = value
-
-        if select('#', ...) > 0 then -- value is used as position
-            value = ...
-        else
-            pos = #tbl + 1
-        end
-
-        return insert(tbl, value, pos)
-    end
-end
-
---- A metamethod (`__insert`) that overrides the behavior of `table.insert`
-metamethods.insert = applier(mm_insert)
-
-local function mm_remove()
-    local table_remove = table.remove
-    table.rawremove = table_remove
-
-    function table.remove(tbl, pos)
-        local remove = getmetafield(tbl, '__remove')
-        if not remove then return table_remove(tbl, pos) end
-
-        return remove(tbl, pos or #tbl)
-    end
-end
-
---- A metamethod (`__remove`) that overrides the behavior of `table.remove`
-metamethods.remove = applier(mm_remove)
-
-local function mm_move()
-    local table_move = table.move
-    table.rawmove = table_move
-
-    function table.move(tbl, from, to, dest, dest_tbl)
-        local move = getmetafield(tbl, '__move')
-        if not move then return table_move(tbl, from, to, dest, dest_tbl) end
-
-        return move(tbl, from, to, dest, dest_tbl)
-    end
-end
-
---- A metamethod (`__move`) that overrides the behavior of `table.move`
-metamethods.move = applier(mm_move)
-
 local function mm_format()
     local string_format = string.format
     local table_concat = table.concat

@@ -9,22 +9,6 @@ end
 
 --#endregion
 
---#region Internal Helpers
-
-local getmetafield do
-    local ok, debug = pcall(require, 'luberries.debug')
-    if not ok then ok, debug = pcall(require, 'debug') end
-
-    local getmetatable = ok and debug.getmetatable or getmetatable
-
-    function getmetafield(obj, field_name)
-        local mt = getmetatable(obj)
-        return mt and mt[field_name]
-    end
-end
-
---#endregion
-
 function table.inherit(to, from)
     for k, v in pairs(from) do
         if to[k] == nil then
@@ -36,9 +20,6 @@ function table.inherit(to, from)
 end
 
 function table.merge(to, from, start_index, end_index)
-    local mm_merge = getmetafield(to, '__merge')
-    if mm_merge then mm_merge(to, from, start_index, end_index) return to end
-
     if start_index then
         end_index = end_index or #from
 
@@ -59,9 +40,6 @@ end
 local select = select
 
 function table.assign(to, ...)
-    local mm_assign = getmetafield(to, '__assign')
-    if mm_assign then mm_assign(to, ...) return to end
-
     for i = 1, select('#', ...) do
         to[i] = select(i, ...)
     end
@@ -153,13 +131,23 @@ function table.retain(tbl, start_pos, end_pos)
         error('start position greater than end position', 2)
     end
 
-    local mm_retain = getmetafield(tbl, '__retain')
-    if mm_retain then mm_retain(tbl, start_pos, end_pos) return tbl end
-
     table.move(tbl, start_pos, end_pos, 1, tbl)
 
     for i = (end_pos - start_pos) + 2, #tbl do
         tbl[i] = nil
+    end
+
+    return tbl
+end
+
+function table.reverse(tbl)
+    local i, j = 1, #tbl
+
+    while i < j do
+        tbl[i], tbl[j] = tbl[j], tbl[i]
+
+        i = i + 1
+        j = j - 1
     end
 
     return tbl

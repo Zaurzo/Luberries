@@ -24,6 +24,10 @@ end
 ---@param func function The function to join.
 ---@param uv_index number The index of the upvalue to replace.
 function upvalue:join(func, uv_index)
+    if not self._is_lua then
+        error('cannot join a non-Lua upvalue', 2)
+    end
+
     debug.upvaluejoin(func, uv_index, self.__getupvalue, 1)
 end
 
