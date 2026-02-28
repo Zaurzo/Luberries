@@ -12,11 +12,11 @@ tuple.__type = 'tuple' -- utilize custom type metamethod if enabled
 function tuple:totable()
     local tbl = {}
 
-    for i = 1, self.n do
+    for i = 1, self[0] do
         tbl[i] = self[i]
     end
 
-    tbl.n = self.n
+    tbl[0] = self[0]
     
     return tbl
 end
@@ -29,12 +29,12 @@ function tuple:slice(start_pos, end_pos)
     local slice = {}
     local n = 0
 
-    for i = math.max(start_pos, 1), math.min(end_pos, self.n) do
+    for i = math.max(start_pos, 1), math.min(end_pos, self[0]) do
         n = n + 1
         slice[n] = self[i]
     end
 
-    slice.n = n
+    slice[0] = n
 
     return setmetatable(slice, tuple)
 end
@@ -45,7 +45,7 @@ end
 ---@return any ... The items.
 function tuple:unpack(start_pos, end_pos)
     start_pos = start_pos and math.max(start_pos, 1) or 1
-    end_pos = end_pos and math.min(end_pos, self.n) or self.n
+    end_pos = end_pos and math.min(end_pos, self[0]) or self[0]
 
     return table.unpack(self, start_pos, end_pos)
 end
@@ -53,7 +53,7 @@ end
 local function tuple_iterator(self, i)
     i = i + 1
 
-    if i > self.n then
+    if i > self[0] then
         return nil
     end
 
@@ -71,7 +71,7 @@ end
 ---Returns the amount of items in the current tuple.
 ---@return number count
 function tuple:count()
-    return self.n
+    return self[0]
 end
 
 function tuple:__newindex()
@@ -93,6 +93,10 @@ tuple.__ipairs = tuple.pairs -- Lua 5.2/5.3 compat
 tuple.__insert = tuple.__newindex -- utilize custom table.insert metamethod if enabled
 tuple.__len = tuple.count
 
+local select = select
+local setmetatable = setmetatable
+
 return function(...)
-    return setmetatable(table.pack(...), tuple)
+    local tpl = { [0] = select('#', ...), ... }
+    return setmetatable(tpl, tuple)
 end
