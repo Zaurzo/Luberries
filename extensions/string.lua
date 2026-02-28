@@ -17,11 +17,11 @@ function string.endswith(str, with)
     return string.sub(str, -#with) == with
 end
 
-function string.trimr(str)
+function string.trimright(str)
     return (string.gsub(str, '%s*$', ''))
 end
 
-function string.triml(str)
+function string.trimleft(str)
     return (string.gsub(str, '^%s*', ''))
 end
 
