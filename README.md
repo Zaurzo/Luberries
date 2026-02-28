@@ -1,4 +1,4 @@
-# Luberries
+# 🫐 Luberries
 Luberries is a pure-Lua library with the goal of providing useful or neat extensions/new libraries. Instead of modifying the original modules, each extension is a proxy wrapper to them. Most extensions or features do not rely on each other, so you should be able to separate them from Luberries without them erroring with little to no modifications, if you need to; however, it is recommended to use the main library.
 
 Some functions in this library utilize the `debug` library. The library respects the decision to strip or modify the debug library, so some features may be limited or turned into no-ops if you do this. I could avoid this entirely by making a C module, but I wish to keep the library pure Lua.
