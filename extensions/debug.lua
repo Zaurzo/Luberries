@@ -19,6 +19,16 @@ end
 
 --#endregion
 
+do
+    local ok, M = pcall(require, 'luberries.env')
+    
+    if ok and M then
+        debug.getenvironment = M.getenvironment
+        debug.getfenv = M.debug.getfenv
+        debug.setfenv = M.debug.setfenv
+    end
+end
+
 function debug.getmetafield(obj, field_name)
     local mt = debug.getmetatable(obj)
     return mt and rawget(mt, field_name)

@@ -109,7 +109,7 @@ do
 
         local mt = debug.getmetatable(t)
 
-        if mt == nil or type(mt) ~= 'table' then
+        if not mt or type(mt) ~= 'table' then
             return false
         end
 
@@ -210,106 +210,17 @@ if not warn then -- Lua 5.3 and below compat
     end
 end
 
-if not setfenv then -- Lua 5.2+ compat
-    local debug = require('luberries.debug')
-
-    local function resolve_func(f, set)
-        local info, level
-
-        if type(f) ~= 'function' then
-            level = f + 2
-            info = debug.getinfo(level, 'fS')
-            
-            if not info or info.what == 'C' then
-                error('invalid level', 3)
-            end
-
-            f = info.func
-        else
-            info = debug.getinfo(f, 'S')
-
-            if info.what == 'C' then
-                if set then
-                    error('cannot change environment of given object', 3)
-                else
-                    return nil
-                end
-            end
-        end
-
-        if not info.source or info.source == '=?' then
-            error('debug info was stripped', 3)
-        end
-
-        return f, level
+do
+    local ok, M = pcall(require, 'luberries.env')
+    
+    if ok then
+        setfenv = M.setfenv
+        getfenv = M.getfenv
     end
 
-    ---@param looker function
-    local function find_env(looker, f)
-        for i = 1, math.huge do
-            local k, v = looker(f, i)
-            if not k then break end
-
-            if k == '_ENV' then
-                return v, i
-            end
-        end
-    end
-
-    function setfenv(f, env)
-        if debug.disabled then
-            return nil
-        end
-
-        local func, level = resolve_func(f, true)
-        local _, index
-
-        if level then -- change in-scope _ENV
-            _, index = find_env(debug.getlocal, level)
-
-            if index then
-                debug.setlocal(level - 1, index, env)
-                return func
-            end
-        end
-
-        _, index = find_env(debug.getupvalue, func)
-
-        if index and func then
-            debug.upvaluejoin(func, index, function() return env end, 1) -- replace upvalue
-            return func
-        end
-
-        return nil
-    end
-
-    function getfenv(f)
-        if debug.disabled then
-            return _G
-        end
-
-        local func, level = resolve_func(f)
-
-        if not func then
-            return _G
-        end
-
-        local env
-
-        if level then
-            env = find_env(debug.getlocal, level)
-        end
-
-        if not env then
-            env = find_env(debug.getupvalue, func)
-        end
-
-        return env or _G
-    end
+    local ok, _xpcall = pcall(require, 'luberries.extensions.base.xpcall')
+    xpcall = ok and _xpcall or xpcall
 end
-
-local ok, _xpcall = pcall(require, 'luberries.extensions.base.xpcall')
-xpcall = ok and _xpcall or xpcall
 
 --#region Classes
 

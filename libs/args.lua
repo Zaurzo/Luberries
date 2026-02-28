@@ -1,5 +1,14 @@
 
 local args = {}
+local math = math
+
+local select = select
+local type = type
+local table_unpack = table.unpack or unpack
+
+local function table_pack(...)
+    return { [0] = select('#', ...), ... }
+end
 
 ---Returns the amount of arguments passed.
 ---@param ... any The arguments to pass.
@@ -22,29 +31,27 @@ function args.contains(item, ...)
     return false
 end
 
-local table = require('luberries.extensions.table')
-
 ---Returns the type of every argument passed.
 ---@param ... any The arguments to pass.
 ---@return string ... The types of the arguments passed.
 function args.type(...)
-    local type_list = {}
-    local n = select('#', ...)
+    local pack = table_pack(...)
+    local n = pack[0]
 
     for i = 1, n do
-        local item = select(i, ...)
-        type_list[i] = type(item)
+        pack[i] = type(pack[i])
     end
 
-    return table.unpack(type_list, 1, n)
+    return table_unpack(pack, 1, n)
 end
 
 ---Returns the arguments passed in the provided range.
+---Negative indices are supported.
 ---@param start_pos number Start range.
 ---@param end_pos number End range.
 ---@param ... any The arguments starting from `start_pos` to `end_pos`.
 function args.slice(start_pos, end_pos, ...)
-    local pack = table.packi(...)
+    local pack = table_pack(...)
     local n = pack[0]
 
     if start_pos < 0 then
@@ -63,7 +70,7 @@ function args.slice(start_pos, end_pos, ...)
 
     start_pos = math.max(start_pos, 1)
 
-    return table.unpack(pack, start_pos, end_pos)
+    return table_unpack(pack, start_pos, end_pos)
 end
 
 ---Returns the arguments passed in reverse.
@@ -77,7 +84,7 @@ function args.reverse(...)
         reversed[i] = select(n - (i - 1), ...)
     end
 
-    return table.unpack(reversed, 1, n)
+    return table_unpack(reversed, 1, n)
 end
 
 ---Combines everything in `tbl` to the passed arguments.
@@ -85,21 +92,21 @@ end
 ---@param ... any The arguments to combine with `tbl`.
 ---@return any ... The passed arguments combined with everything in `tbl`.
 function args.concat(tbl, ...)
-    local combined = table.packi(...)
+    local combined = table_pack(...)
     local tbl_n, args_n = #tbl, combined[0]
 
     for i = 1, tbl_n do
         combined[i + args_n] = tbl[i]
     end
 
-    return table.unpack(combined, 1, args_n + tbl_n)
+    return table_unpack(combined, 1, args_n + tbl_n)
 end
 
----Filters out all nils and returns the passed arguments.
+---Returns the passed arguments with nils filtered out.
 ---@param ... any The arguments to filter.
 ---@return any ... The passed arguments without any nils.
 function args.clearnil(...)
-    local tbl = {}
+    local pack = {}
     local n = 0
 
     for i = 1, select('#', ...) do
@@ -107,11 +114,11 @@ function args.clearnil(...)
 
         if item ~= nil then
             n = n + 1
-            tbl[n] = item
+            pack[n] = item
         end
     end
 
-    return table.unpack(tbl, 1, n)
+    return table_unpack(pack, 1, n)
 end
 
 return args

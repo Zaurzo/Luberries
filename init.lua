@@ -11,6 +11,8 @@ local open = require('luberries.open')
 
 -- Extensions
 luberries.base          = open('extensions.base', '_G')
+luberries.math          = open('extensions.math', 'math')
+luberries.string        = open('extensions.string', 'string')
 luberries.table         = open('extensions.table', 'table')
 luberries.debug         = open('extensions.debug', 'debug')
 
