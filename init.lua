@@ -14,6 +14,7 @@ luberries.base          = open('extensions.base', '_G')
 luberries.math          = open('extensions.math', 'math')
 luberries.string        = open('extensions.string', 'string')
 luberries.table         = open('extensions.table', 'table')
+luberries.package       = open('extensions.package', 'package')
 luberries.debug         = open('extensions.debug', 'debug')
 
 -- New libraries
