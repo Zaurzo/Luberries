@@ -138,41 +138,6 @@ function ripairs(tbl, start)
     return ripairs_iterator, tbl, (start or #tbl) + 1
 end
 
-local function resolve_success(tbl, ...)
-    if select('#', ...) < 1 then
-        return table.unpack(tbl, 1, tbl.n)
-    else
-        return true, ...
-    end
-end
-
-do
-    local table_unpack = table.unpack or unpack
-
-    local function table_pack(...)
-        return { [0] = select('#', ...), ... }
-    end
-
-    function pcallex(func, err_handler, on_success, ...)
-        local res = table_pack( xpcall(func, err_handler, ...) )
-
-        if res[1] and on_success then
-            --[[
-                Calls on_success if func executed successfully. The success callback is 
-                passed the return values of func; If the callback returns anything, 
-                pcallex will return those instead of func's actual returns.
-            --]]
-
-            return resolve_success(
-                res,
-                on_success(table_unpack(res, 2, res[0]))
-            )
-        end
-
-        return table_unpack(res, 1, res[0])
-    end
-end
-
 if not unpack then -- Lua 5.2+ compat
     unpack = table.unpack
 end
@@ -212,7 +177,7 @@ end
 
 do
     local ok, M = pcall(require, 'luberries.env')
-    
+
     if ok then
         setfenv = M.setfenv
         getfenv = M.getfenv
